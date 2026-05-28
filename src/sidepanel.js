@@ -424,7 +424,7 @@ async function hydrateTile(button, icon, options = {}) {
   }
 }
 
-function primeDragData(event, icon, options = {}) {
+function primeDragData(event, icon, options = {}, dragOptions = {}) {
   const style = options.style ?? styleInput.value;
   const filled = options.filled ?? fillInput.checked;
   const color = options.color ?? colorInput.value;
@@ -437,7 +437,7 @@ function primeDragData(event, icon, options = {}) {
   event.dataTransfer.setData("DownloadURL", `image/svg+xml:${icon.name}.svg:${url}`);
 
   if (!cachedSvg) {
-    return { style, filled, color };
+    return;
   }
 
   const dataUrl = svgToDataUrl(cachedSvg);
@@ -452,7 +452,9 @@ function primeDragData(event, icon, options = {}) {
     }
   }
 
-  return { style, filled, color };
+  if (dragOptions.remember !== false) {
+    rememberRecent(icon, { style, filled, color });
+  }
 }
 
 function loadRecents() {
@@ -484,7 +486,7 @@ function rememberRecent(icon, options) {
   renderRecents();
 }
 
-function createTile(icon, options = {}) {
+function createTile(icon, options = {}, tileContext = {}) {
   const button = document.createElement("button");
   const style = options.style ?? styleInput.value;
   const filled = options.filled ?? fillInput.checked;
@@ -502,15 +504,7 @@ function createTile(icon, options = {}) {
   button.addEventListener("pointerenter", () => hydrateTile(button, icon, tileOptions), { once: true });
   button.addEventListener("pointerdown", () => hydrateTile(button, icon, tileOptions), { once: true });
   button.addEventListener("focus", () => hydrateTile(button, icon, tileOptions), { once: true });
-  button.addEventListener("dragstart", (event) => {
-    button.pendingRecent = primeDragData(event, icon, tileOptions);
-  });
-  button.addEventListener("dragend", () => {
-    if (button.pendingRecent) {
-      rememberRecent(icon, button.pendingRecent);
-      button.pendingRecent = null;
-    }
-  });
+  button.addEventListener("dragstart", (event) => primeDragData(event, icon, tileOptions, tileContext));
 
   hydrateTile(button, icon, tileOptions);
   return button;
@@ -523,7 +517,7 @@ function renderRecents() {
 
   const fragment = document.createDocumentFragment();
   for (const { recent, icon } of validRecents) {
-    fragment.append(createTile(icon, recent));
+    fragment.append(createTile(icon, recent, { remember: false }));
   }
   recentsGrid.append(fragment);
 }
