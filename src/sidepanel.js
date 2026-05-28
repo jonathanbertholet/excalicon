@@ -364,11 +364,13 @@ function setSvgElementFill(svg, color) {
       return match;
     }
 
-    const nextAttributes = /\sfill="/i.test(attributes)
-      ? attributes.replace(/\sfill="[^"]*"/i, ` fill="${color}"`)
-      : `${attributes} fill="${color}"`;
+    const isSelfClosing = /\/\s*$/.test(attributes);
+    const editableAttributes = attributes.replace(/\s*\/\s*$/, "");
+    const nextAttributes = /\sfill="/i.test(editableAttributes)
+      ? editableAttributes.replace(/\sfill="[^"]*"/i, ` fill="${color}"`)
+      : `${editableAttributes} fill="${color}"`;
 
-    return `<${tag}${nextAttributes}>`;
+    return `<${tag}${nextAttributes}${isSelfClosing ? "/" : ""}>`;
   });
 }
 
