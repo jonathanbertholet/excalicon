@@ -25,7 +25,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -74,6 +75,7 @@ input {
 }
 
 .search,
+.style,
 .color {
   display: grid;
   gap: 6px;
@@ -81,6 +83,7 @@ input {
 }
 
 .search span,
+.style span,
 .color span {
   color: var(--muted);
   font-size: 11px;
@@ -100,6 +103,23 @@ input {
   outline: none;
 }
 
+.style select {
+  min-width: 0;
+  width: 100%;
+  height: 36px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  outline: none;
+}
+
+.style select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
 .search input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
@@ -107,7 +127,7 @@ input {
 
 .toolbar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: end;
   gap: 10px;
 }
@@ -153,6 +173,30 @@ input {
   padding-bottom: 24px;
 }
 
+.recents {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.recents[hidden] {
+  display: none;
+}
+
+.recents h2 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1;
+}
+
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+}
+
 .icon-tile {
   display: grid;
   grid-template-rows: 42px minmax(28px, auto);
@@ -168,6 +212,22 @@ input {
   color: var(--text);
   cursor: grab;
   transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.recent-grid .icon-tile {
+  grid-template-rows: 34px minmax(24px, auto);
+  min-height: 70px;
+  padding: 7px 6px;
+}
+
+.recent-grid .icon-preview {
+  width: 34px;
+  height: 34px;
+}
+
+.recent-grid .icon-preview svg {
+  width: 24px;
+  height: 24px;
 }
 
 .icon-tile:hover,

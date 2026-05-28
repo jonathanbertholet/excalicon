@@ -6,13 +6,12 @@ import process from "node:process";
 const root = process.cwd();
 const sourceDir = path.join(root, "src");
 const packageDir = path.join(root, "node_modules", "@material-symbols", "svg-400");
-const iconSourceDir = path.join(packageDir, "rounded");
 const distDir = path.join(root, "dist");
 const iconDistRoot = path.join(distDir, "icons");
-const iconDistDir = path.join(iconDistRoot, "rounded");
 const assetDistDir = path.join(distDir, "assets");
+const iconStyles = ["rounded", "outlined", "sharp"];
 
-if (!existsSync(iconSourceDir)) {
+if (!iconStyles.every((style) => existsSync(path.join(packageDir, style)))) {
   throw new Error("Missing @material-symbols/svg-400. Run `npm install` first.");
 }
 
@@ -39,29 +38,35 @@ for (const file of ["icon-16.png", "icon-32.png", "icon-48.png", "icon-128.png"]
 
 await copyFile(path.join(packageDir, "LICENSE"), path.join(distDir, "MATERIAL_SYMBOLS_LICENSE"));
 
-const iconFiles = (await readdir(iconSourceDir)).filter((fileName) => fileName.endsWith(".svg"));
 const iconsByName = new Map();
 
-for (const fileName of iconFiles) {
-  const filled = fileName.endsWith("-fill.svg");
-  const name = fileName.replace(/-fill\.svg$|\.svg$/g, "");
-  const current = iconsByName.get(name) ?? {
-    name,
-    label: name.replace(/_/g, " "),
-    regular: false,
-    filled: false,
-  };
+for (const style of iconStyles) {
+  const iconSourceDir = path.join(packageDir, style);
+  const iconDistDir = path.join(iconDistRoot, style);
+  const iconFiles = (await readdir(iconSourceDir)).filter((fileName) => fileName.endsWith(".svg"));
 
-  if (filled) {
-    current.filled = true;
-  } else {
-    current.regular = true;
+  for (const fileName of iconFiles) {
+    const filled = fileName.endsWith("-fill.svg");
+    const name = fileName.replace(/-fill\.svg$|\.svg$/g, "");
+    const current = iconsByName.get(name) ?? {
+      name,
+      label: name.replace(/_/g, " "),
+      styles: {},
+    };
+    const styleAvailability = current.styles[style] ?? { regular: false, filled: false };
+
+    if (filled) {
+      styleAvailability.filled = true;
+    } else {
+      styleAvailability.regular = true;
+    }
+
+    current.styles[style] = styleAvailability;
+    iconsByName.set(name, current);
   }
 
-  iconsByName.set(name, current);
+  await symlink(iconSourceDir, iconDistDir, "dir");
 }
-
-await symlink(iconSourceDir, iconDistDir, "dir");
 
 const icons = [...iconsByName.values()].sort((a, b) => a.name.localeCompare(b.name));
 const indexSource = `export const ICONS = ${JSON.stringify(icons)};\n`;

@@ -159,9 +159,14 @@ async function materialIconEntries() {
     const dataOffset = offset + 512;
     const nextOffset = dataOffset + Math.ceil(size / 512) * 512;
 
-    if (rawName.startsWith("package/rounded/") && rawName.endsWith(".svg")) {
+    if (
+      (rawName.startsWith("package/rounded/") ||
+        rawName.startsWith("package/outlined/") ||
+        rawName.startsWith("package/sharp/")) &&
+      rawName.endsWith(".svg")
+    ) {
       entries.push({
-        name: rawName.replace("package/rounded/", "icons/rounded/"),
+        name: rawName.replace("package/", "icons/"),
         data: tar.subarray(dataOffset, dataOffset + size),
       });
     }

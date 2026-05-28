@@ -23,6 +23,15 @@
         </label>
 
         <div class="toolbar" role="group" aria-label="Icon options">
+          <label class="style">
+            <span>Style</span>
+            <select id="styleInput">
+              <option value="rounded">Rounded</option>
+              <option value="outlined">Outlined</option>
+              <option value="sharp">Sharp</option>
+            </select>
+          </label>
+
           <label class="toggle">
             <input id="fillInput" type="checkbox" checked />
             <span>Filled</span>
@@ -37,6 +46,11 @@
 
       <section class="status" aria-live="polite">
         <span id="resultCount"></span>
+      </section>
+
+      <section id="recentsSection" class="recents" aria-label="Recent icons" hidden>
+        <h2>Recent</h2>
+        <div id="recentsGrid" class="recent-grid"></div>
       </section>
 
       <section id="iconGrid" class="grid" aria-label="Search results"></section>
