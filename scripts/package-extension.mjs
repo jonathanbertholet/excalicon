@@ -10,8 +10,9 @@ import zlib from "node:zlib";
 
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
+const packageJson = JSON.parse(await (await import("node:fs/promises")).readFile(path.join(root, "package.json"), "utf8"));
 const releaseDir = path.join(root, "release");
-const output = path.join(releaseDir, "excalicon-0.2.0.zip");
+const output = path.join(releaseDir, `excalicon-${packageJson.version}.zip`);
 const materialPackage = path.join(root, "material-symbols-svg-400-0.44.10.tgz");
 
 function dosDateTime(date = new Date()) {
