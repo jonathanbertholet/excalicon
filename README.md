@@ -33,4 +33,4 @@ For local development, `dist/icons/rounded` is a symlink into `node_modules/@mat
 npm run package
 ```
 
-This creates a Chrome Web Store upload ZIP in `release/` with real SVG files instead of development symlinks.
+This creates a Chrome Web Store upload ZIP in `release/`.

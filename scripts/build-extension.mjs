@@ -1,13 +1,9 @@
-import { execFile as execFileCallback } from "node:child_process";
 import { copyFile, mkdir, readdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { promisify } from "node:util";
 
-const execFile = promisify(execFileCallback);
 const root = process.cwd();
-const packageMode = process.argv.includes("--package");
 const sourceDir = path.join(root, "src");
 const packageDir = path.join(root, "node_modules", "@material-symbols", "svg-400");
 const iconSourceDir = path.join(packageDir, "rounded");
@@ -44,14 +40,6 @@ for (const file of ["icon-16.png", "icon-32.png", "icon-48.png", "icon-128.png"]
 await copyFile(path.join(packageDir, "LICENSE"), path.join(distDir, "MATERIAL_SYMBOLS_LICENSE"));
 
 const iconFiles = (await readdir(iconSourceDir)).filter((fileName) => fileName.endsWith(".svg"));
-
-if (packageMode) {
-  await mkdir(iconDistDir, { recursive: true });
-  await execFile("rsync", ["-a", `${iconSourceDir}/`, `${iconDistDir}/`]);
-} else {
-  await symlink(iconSourceDir, iconDistDir, "dir");
-}
-
 const iconsByName = new Map();
 
 for (const fileName of iconFiles) {
@@ -72,6 +60,8 @@ for (const fileName of iconFiles) {
 
   iconsByName.set(name, current);
 }
+
+await symlink(iconSourceDir, iconDistDir, "dir");
 
 const icons = [...iconsByName.values()].sort((a, b) => a.name.localeCompare(b.name));
 const indexSource = `export const ICONS = ${JSON.stringify(icons)};\n`;
