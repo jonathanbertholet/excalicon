@@ -3,6 +3,45 @@ import { ICONS } from "./icon-index.js";
 const MAX_RESULTS = 120;
 const MAX_RECENTS = 12;
 const RECENTS_KEY = "excalicon.recents.v1";
+const DEFAULT_COLOR = "#1f1f1f";
+const COLOR_PALETTE = [
+  "#1f1f1f",
+  "#5f6368",
+  "#9aa0a6",
+  "#dadce0",
+  "#ffffff",
+  "#b3261e",
+  "#dc362e",
+  "#f29900",
+  "#fbbc04",
+  "#fdd663",
+  "#5f4700",
+  "#795548",
+  "#a05a2c",
+  "#c26401",
+  "#e8710a",
+  "#137333",
+  "#188038",
+  "#34a853",
+  "#81c995",
+  "#0b8043",
+  "#00796b",
+  "#129eaf",
+  "#00acc1",
+  "#78d9ec",
+  "#174ea6",
+  "#1967d2",
+  "#4285f4",
+  "#8ab4f8",
+  "#3f51b5",
+  "#673ab7",
+  "#8430ce",
+  "#a142f4",
+  "#d01884",
+  "#e91e63",
+  "#f06292",
+  "#f8bbd0",
+];
 const DEFAULT_QUERY = "mail arrow check close home search account database cloud folder";
 const STYLE_LABELS = {
   rounded: "Rounded",
@@ -290,7 +329,7 @@ const ALIASES = {
 const searchInput = document.querySelector("#searchInput");
 const styleInput = document.querySelector("#styleInput");
 const fillInput = document.querySelector("#fillInput");
-const colorInput = document.querySelector("#colorInput");
+const colorGrid = document.querySelector("#colorGrid");
 const iconGrid = document.querySelector("#iconGrid");
 const resultCount = document.querySelector("#resultCount");
 const recentsSection = document.querySelector("#recentsSection");
@@ -298,6 +337,7 @@ const recentsGrid = document.querySelector("#recentsGrid");
 
 const svgCache = new Map();
 let recents = loadRecents();
+let selectedColor = DEFAULT_COLOR;
 
 const normalize = (value) => value.toLowerCase().replace(/[\s-]+/g, "_").trim();
 
@@ -318,17 +358,46 @@ function iconPath(icon, style = styleInput.value, filled = fillInput.checked) {
   return `icons/${style}/${preferredFileName(icon, filled)}`;
 }
 
-function colorizeSvg(svg, color = colorInput.value || "#1f1f1f") {
-  return svg
-    .replace(/<svg\b([^>]*)>/, `<svg$1 fill="${color}">`)
+function setSvgElementFill(svg, color) {
+  return svg.replace(/<(path|circle|rect|polygon|polyline|ellipse|line)\b([^>]*)>/g, (match, tag, attributes) => {
+    if (/\sfill="none"/i.test(attributes)) {
+      return match;
+    }
+
+    const nextAttributes = /\sfill="/i.test(attributes)
+      ? attributes.replace(/\sfill="[^"]*"/i, ` fill="${color}"`)
+      : `${attributes} fill="${color}"`;
+
+    return `<${tag}${nextAttributes}>`;
+  });
+}
+
+function setSvgRootColor(svg, color) {
+  return svg.replace(/<svg\b([^>]*)>/, (match, attributes) => {
+    const withFill = /\sfill="/i.test(attributes)
+      ? attributes.replace(/\sfill="[^"]*"/i, ` fill="${color}"`)
+      : `${attributes} fill="${color}"`;
+    const withColor = /\scolor="/i.test(withFill)
+      ? withFill.replace(/\scolor="[^"]*"/i, ` color="${color}"`)
+      : `${withFill} color="${color}"`;
+
+    return `<svg${withColor}>`;
+  });
+}
+
+function colorizeSvg(svg, color = selectedColor) {
+  const resizedSvg = setSvgRootColor(svg, color)
+    .replace(/currentColor/g, color)
     .replace(/\swidth="48"/, ' width="24"')
     .replace(/\sheight="48"/, ' height="24"');
+
+  return setSvgElementFill(resizedSvg, color);
 }
 
 async function loadSvg(icon, options = {}) {
   const style = options.style ?? styleInput.value;
   const filled = options.filled ?? fillInput.checked;
-  const color = options.color ?? colorInput.value;
+  const color = options.color ?? selectedColor;
   const path = iconPath(icon, style, filled);
   const cacheKey = `${path}:${color}`;
 
@@ -348,6 +417,12 @@ async function loadSvg(icon, options = {}) {
 
 function svgToDataUrl(svg) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function urlWithColor(url, color) {
+  const nextUrl = new URL(url);
+  nextUrl.hash = `color=${encodeURIComponent(color)}`;
+  return nextUrl.href;
 }
 
 function searchableTerms(icon) {
@@ -427,14 +502,15 @@ async function hydrateTile(button, icon, options = {}) {
 function primeDragData(event, icon, options = {}, dragOptions = {}) {
   const style = options.style ?? styleInput.value;
   const filled = options.filled ?? fillInput.checked;
-  const color = options.color ?? colorInput.value;
+  const color = options.color ?? selectedColor;
   const path = iconPath(icon, style, filled);
-  const url = chrome.runtime.getURL(path);
+  const url = urlWithColor(chrome.runtime.getURL(path), color);
   const cachedSvg = svgCache.get(`${path}:${color}`);
 
   event.dataTransfer.effectAllowed = "copy";
   event.dataTransfer.setData("text/uri-list", url);
   event.dataTransfer.setData("DownloadURL", `image/svg+xml:${icon.name}.svg:${url}`);
+  event.dataTransfer.setData("application/x-excalicon-color", color);
 
   if (!cachedSvg) {
     return;
@@ -490,7 +566,7 @@ function createTile(icon, options = {}, tileContext = {}) {
   const button = document.createElement("button");
   const style = options.style ?? styleInput.value;
   const filled = options.filled ?? fillInput.checked;
-  const color = options.color ?? colorInput.value;
+  const color = options.color ?? selectedColor;
   button.className = "icon-tile";
   button.type = "button";
   button.draggable = true;
@@ -543,17 +619,37 @@ function render() {
   iconGrid.append(fragment);
 }
 
+function renderColorPalette() {
+  colorGrid.replaceChildren();
+
+  for (const color of COLOR_PALETTE) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "color-swatch";
+    button.style.setProperty("--swatch", color);
+    button.title = color;
+    button.setAttribute("role", "radio");
+    button.setAttribute("aria-label", color);
+    button.setAttribute("aria-checked", String(color === selectedColor));
+
+    button.addEventListener("click", () => {
+      selectedColor = color;
+      renderColorPalette();
+      render();
+    });
+
+    colorGrid.append(button);
+  }
+}
+
 searchInput.addEventListener("input", render);
 styleInput.addEventListener("change", () => {
   svgCache.clear();
   render();
 });
 fillInput.addEventListener("change", render);
-colorInput.addEventListener("input", () => {
-  svgCache.clear();
-  render();
-});
 
+renderColorPalette();
 renderRecents();
 render();
 searchInput.focus();

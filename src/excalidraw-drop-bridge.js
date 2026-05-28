@@ -1,4 +1,9 @@
 const ICON_RESOURCE_PREFIX = chrome.runtime.getURL("icons/");
+const DEFAULT_COLOR = "#1f1f1f";
+
+function normalizeColor(color) {
+  return /^#[0-9a-f]{6}$/i.test(color) ? color : DEFAULT_COLOR;
+}
 
 function isExcaliconSvgDrop(dataTransfer) {
   if (!dataTransfer) {
@@ -30,18 +35,73 @@ function fileNameFromDrop(dataTransfer) {
 }
 
 async function svgFromDrop(dataTransfer) {
+  const color = colorFromDrop(dataTransfer);
   const text = dataTransfer.getData("text/plain");
   if (text.trimStart().startsWith("<svg")) {
-    return text;
+    return colorizeSvg(text, color);
   }
 
-  const url = dataTransfer.getData("text/uri-list");
-  if (!url.startsWith(ICON_RESOURCE_PREFIX)) {
+  const rawUrl = dataTransfer.getData("text/uri-list");
+  if (!rawUrl.startsWith(ICON_RESOURCE_PREFIX)) {
     return null;
   }
 
-  const response = await fetch(url);
-  return response.ok ? response.text() : null;
+  const url = new URL(rawUrl);
+  url.hash = "";
+
+  const response = await fetch(url.href);
+  return response.ok ? colorizeSvg(await response.text(), color) : null;
+}
+
+function colorFromDrop(dataTransfer) {
+  const explicitColor = dataTransfer.getData("application/x-excalicon-color");
+  if (explicitColor) {
+    return normalizeColor(explicitColor);
+  }
+
+  const rawUrl = dataTransfer.getData("text/uri-list");
+  if (!rawUrl.startsWith(ICON_RESOURCE_PREFIX)) {
+    return DEFAULT_COLOR;
+  }
+
+  const color = new URL(rawUrl).hash.match(/(?:^#|&)color=([^&]+)/)?.[1] ?? "";
+  return normalizeColor(decodeURIComponent(color));
+}
+
+function setSvgElementFill(svg, color) {
+  return svg.replace(/<(path|circle|rect|polygon|polyline|ellipse|line)\b([^>]*)>/g, (match, tag, attributes) => {
+    if (/\sfill="none"/i.test(attributes)) {
+      return match;
+    }
+
+    const nextAttributes = /\sfill="/i.test(attributes)
+      ? attributes.replace(/\sfill="[^"]*"/i, ` fill="${color}"`)
+      : `${attributes} fill="${color}"`;
+
+    return `<${tag}${nextAttributes}>`;
+  });
+}
+
+function setSvgRootColor(svg, color) {
+  return svg.replace(/<svg\b([^>]*)>/, (match, attributes) => {
+    const withFill = /\sfill="/i.test(attributes)
+      ? attributes.replace(/\sfill="[^"]*"/i, ` fill="${color}"`)
+      : `${attributes} fill="${color}"`;
+    const withColor = /\scolor="/i.test(withFill)
+      ? withFill.replace(/\scolor="[^"]*"/i, ` color="${color}"`)
+      : `${withFill} color="${color}"`;
+
+    return `<svg${withColor}>`;
+  });
+}
+
+function colorizeSvg(svg, color) {
+  const resizedSvg = setSvgRootColor(svg, color)
+    .replace(/currentColor/g, color)
+    .replace(/\swidth="48"/, ' width="24"')
+    .replace(/\sheight="48"/, ' height="24"');
+
+  return setSvgElementFill(resizedSvg, color);
 }
 
 function getDropTarget(dropPoint) {
