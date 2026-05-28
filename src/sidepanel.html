@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Excalicon</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <div>
+          <h1>Excalicon</h1>
+          <p>Material Symbols for Excalidraw</p>
+        </div>
+      </header>
+
+      <section class="controls" aria-label="Icon search controls">
+        <label class="search">
+          <span>Search</span>
+          <input id="searchInput" type="search" autocomplete="off" spellcheck="false" placeholder="mail, arrow, database..." />
+        </label>
+
+        <div class="toolbar" role="group" aria-label="Icon options">
+          <label class="toggle">
+            <input id="fillInput" type="checkbox" checked />
+            <span>Filled</span>
+          </label>
+
+          <label class="color">
+            <span>Color</span>
+            <input id="colorInput" type="color" value="#1f1f1f" />
+          </label>
+        </div>
+      </section>
+
+      <section class="status" aria-live="polite">
+        <span id="resultCount"></span>
+      </section>
+
+      <section id="iconGrid" class="grid" aria-label="Search results"></section>
+    </main>
+
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Excalicon Chrome Web Store Screenshot</title>
+    <style>
+      :root {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #111827;
+        background: #eef1f6;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      .frame {
+        position: relative;
+        width: 1280px;
+        height: 800px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 52%, #e5e7eb 100%);
+      }
+
+      .browser {
+        position: absolute;
+        inset: 42px;
+        display: grid;
+        grid-template-rows: 54px 1fr;
+        overflow: hidden;
+        border: 1px solid #d5dae4;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 30px 90px rgb(15 23 42 / 18%);
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 18px;
+        padding: 0 18px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .dots {
+        display: flex;
+        gap: 8px;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+      }
+
+      .dot:nth-child(1) { background: #ef4444; }
+      .dot:nth-child(2) { background: #f59e0b; }
+      .dot:nth-child(3) { background: #22c55e; }
+
+      .url {
+        height: 32px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        border: 1px solid #e1e5ec;
+        border-radius: 999px;
+        background: #fff;
+        color: #64748b;
+        font-size: 14px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #1e293b;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .brand img {
+        width: 24px;
+        height: 24px;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 1fr 378px;
+        min-height: 0;
+      }
+
+      .canvas {
+        position: relative;
+        min-height: 0;
+        background:
+          linear-gradient(#edf0f4 1px, transparent 1px),
+          linear-gradient(90deg, #edf0f4 1px, transparent 1px),
+          #ffffff;
+        background-size: 28px 28px;
+      }
+
+      .canvas-toolbar {
+        position: absolute;
+        top: 22px;
+        left: 22px;
+        display: flex;
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid #dde2ea;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 10px 30px rgb(15 23 42 / 10%);
+      }
+
+      .tool {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        color: #475569;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .tool.active {
+        background: #eef2ff;
+        color: #2563eb;
+      }
+
+      .diagram {
+        position: absolute;
+        left: 154px;
+        top: 176px;
+        width: 610px;
+        height: 350px;
+      }
+
+      .node {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        border: 3px solid #1f2937;
+        border-radius: 16px;
+        background: #fffdf7;
+        color: #111827;
+        font-size: 18px;
+        font-weight: 720;
+        box-shadow: 0 10px 0 rgb(31 41 55 / 5%);
+      }
+
+      .node.mail { left: 26px; top: 40px; width: 166px; height: 92px; }
+      .node.flow { left: 232px; top: 178px; width: 172px; height: 92px; }
+      .node.cloud { right: 20px; top: 40px; width: 166px; height: 92px; }
+
+      .node svg {
+        width: 34px;
+        height: 34px;
+        margin-bottom: 8px;
+      }
+
+      .line {
+        position: absolute;
+        height: 3px;
+        background: #1f2937;
+        transform-origin: left center;
+      }
+
+      .line.a { left: 186px; top: 116px; width: 145px; transform: rotate(35deg); }
+      .line.b { left: 383px; top: 224px; width: 148px; transform: rotate(-35deg); }
+
+      .drop-hint {
+        position: absolute;
+        right: 82px;
+        bottom: 78px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        border: 1px solid #c7d2fe;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #1d4ed8;
+        font-size: 17px;
+        font-weight: 750;
+      }
+
+      .sidepanel {
+        min-height: 0;
+        border-left: 1px solid #dbe0e8;
+        background: #f7f8fa;
+      }
+
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <div class="browser">
+        <div class="topbar">
+          <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          <div class="url">https://excalidraw.com</div>
+          <div class="brand"><img src="../../src/assets/icon.svg" alt="" /> Excalicon</div>
+        </div>
+        <div class="content">
+          <section class="canvas" aria-label="Excalidraw canvas preview">
+            <div class="canvas-toolbar">
+              <div class="tool active">↖</div>
+              <div class="tool">□</div>
+              <div class="tool">○</div>
+              <div class="tool">→</div>
+              <div class="tool">A</div>
+            </div>
+            <div class="diagram">
+              <div class="line a"></div>
+              <div class="line b"></div>
+              <div class="node mail">
+                <svg viewBox="0 -960 960 960" aria-hidden="true"><path fill="currentColor" d="M140-160q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h680q24 0 42 18t18 42v520q0 24-18 42t-42 18H140Zm348.5-309.5q3.5-1.5 7.5-3.5l314-205q5-3 7.5-8t2.5-11q0-13-11.5-20.5t-23.5.5L480-522 176-717q-12-8-24-1t-12 20q0 6 3 11.5t7 8.5l314 205q4 2 7.5 3.5t8.5 1.5q5 0 8.5-1.5Z"/></svg>
+                Mail
+              </div>
+              <div class="node flow">
+                <svg viewBox="0 -960 960 960" aria-hidden="true"><path fill="currentColor" d="M280-160q-50 0-85-35t-35-85q0-38 21.5-68t55.5-44v-176q-34-14-55.5-44T160-680q0-50 35-85t85-35q38 0 68 21.5t44 55.5h176q14-34 44-55.5t68-21.5q50 0 85 35t35 85q0 50-35 85t-85 35q-38 0-68-21.5T568-637H392q-11 26-31.5 46.5T314-559v166q26 11 46.5 31.5T392-315h176q14-34 44-55.5t68-21.5q50 0 85 35t35 85q0 50-35 85t-85 35q-38 0-68-21.5T568-237H392q-14 34-44 55.5T280-160Z"/></svg>
+                Flow
+              </div>
+              <div class="node cloud">
+                <svg viewBox="0 -960 960 960" aria-hidden="true"><path fill="currentColor" d="M260-160q-91 0-155.5-63.5T40-378q0-78 49-138.5T213-591q25-92 101.5-150.5T490-800q112 0 190.5 78.5T759-531v11h11q63 0 106.5 43.5T920-370q0 87-61.5 148.5T710-160H260Z"/></svg>
+                Cloud
+              </div>
+            </div>
+            <div class="drop-hint">Drag icons directly onto the canvas</div>
+          </section>
+          <aside class="sidepanel">
+            <iframe src="../../dist/sidepanel.html" title="Excalicon side panel"></iframe>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

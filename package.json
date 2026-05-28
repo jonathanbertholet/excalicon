@@ -1,0 +1,19 @@
+{
+  "name": "excalicon",
+  "version": "1.0.0",
+  "description": "Chrome side panel for searching and inserting Google Material Symbols into Excalidraw.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-extension.mjs",
+    "assets": "node scripts/render-store-assets.mjs",
+    "package": "node scripts/package-extension.mjs",
+    "start": "npm run build && npx --yes http-server dist -p 4173 -c-1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@material-symbols/svg-400": "^0.44.10"
+  }
+}
