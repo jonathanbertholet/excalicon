@@ -298,6 +298,7 @@ const recentsGrid = document.querySelector("#recentsGrid");
 
 const svgCache = new Map();
 let recents = loadRecents();
+let pendingRecentsRender = false;
 
 const normalize = (value) => value.toLowerCase().replace(/[\s-]+/g, "_").trim();
 
@@ -424,7 +425,7 @@ async function hydrateTile(button, icon, options = {}) {
   }
 }
 
-function primeDragData(event, icon, options = {}) {
+function primeDragData(event, icon, options = {}, dragOptions = {}) {
   const style = options.style ?? styleInput.value;
   const filled = options.filled ?? fillInput.checked;
   const color = options.color ?? colorInput.value;
@@ -452,7 +453,7 @@ function primeDragData(event, icon, options = {}) {
     }
   }
 
-  rememberRecent(icon, { style, filled, color });
+  rememberRecent(icon, { style, filled, color }, dragOptions);
 }
 
 function loadRecents() {
@@ -471,7 +472,16 @@ function iconByName(name) {
   return ICONS.find((icon) => icon.name === name);
 }
 
-function rememberRecent(icon, options) {
+function flushPendingRecentsRender() {
+  if (!pendingRecentsRender) {
+    return;
+  }
+
+  pendingRecentsRender = false;
+  renderRecents();
+}
+
+function rememberRecent(icon, options, dragOptions = {}) {
   const recent = {
     name: icon.name,
     style: options.style,
@@ -481,10 +491,16 @@ function rememberRecent(icon, options) {
   const key = JSON.stringify(recent);
   recents = [recent, ...recents.filter((item) => JSON.stringify(item) !== key)].slice(0, MAX_RECENTS);
   saveRecents();
+
+  if (dragOptions.deferRecentRender) {
+    pendingRecentsRender = true;
+    return;
+  }
+
   renderRecents();
 }
 
-function createTile(icon, options = {}) {
+function createTile(icon, options = {}, tileContext = {}) {
   const button = document.createElement("button");
   const style = options.style ?? styleInput.value;
   const filled = options.filled ?? fillInput.checked;
@@ -502,7 +518,10 @@ function createTile(icon, options = {}) {
   button.addEventListener("pointerenter", () => hydrateTile(button, icon, tileOptions), { once: true });
   button.addEventListener("pointerdown", () => hydrateTile(button, icon, tileOptions), { once: true });
   button.addEventListener("focus", () => hydrateTile(button, icon, tileOptions), { once: true });
-  button.addEventListener("dragstart", (event) => primeDragData(event, icon, tileOptions));
+  button.addEventListener("dragstart", (event) => {
+    primeDragData(event, icon, tileOptions, { deferRecentRender: tileContext.deferRecentRender });
+  });
+  button.addEventListener("dragend", flushPendingRecentsRender);
 
   hydrateTile(button, icon, tileOptions);
   return button;
@@ -515,7 +534,7 @@ function renderRecents() {
 
   const fragment = document.createDocumentFragment();
   for (const { recent, icon } of validRecents) {
-    fragment.append(createTile(icon, recent));
+    fragment.append(createTile(icon, recent, { deferRecentRender: true }));
   }
   recentsGrid.append(fragment);
 }
