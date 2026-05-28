@@ -7,3 +7,4 @@ release/
 .tmp-package-zip.py
 *.crx
 *.pem
+*.tgz

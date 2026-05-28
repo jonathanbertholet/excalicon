@@ -37,7 +37,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["icons/rounded/*.svg"],
+      "resources": ["icons/*/*.svg"],
       "matches": ["https://excalidraw.com/*", "https://*.excalidraw.com/*"]
     }
   ]

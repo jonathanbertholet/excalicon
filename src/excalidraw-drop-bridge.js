@@ -1,4 +1,4 @@
-const ICON_RESOURCE_PREFIX = chrome.runtime.getURL("icons/rounded/");
+const ICON_RESOURCE_PREFIX = chrome.runtime.getURL("icons/");
 
 function isExcaliconSvgDrop(dataTransfer) {
   if (!dataTransfer) {

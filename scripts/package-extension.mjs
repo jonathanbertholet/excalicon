@@ -124,7 +124,7 @@ async function collectDistFiles(dir, prefix = "") {
 
     if (fileStat.isDirectory()) {
       entries.push(...(await collectDistFiles(fullPath, relativePath)));
-    } else if (!relativePath.startsWith("icons/rounded/")) {
+    } else if (!relativePath.startsWith("icons/")) {
       entries.push({ fullPath, relativePath });
     }
   }
