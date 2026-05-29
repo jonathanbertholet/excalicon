@@ -1,6 +1,6 @@
 {
   "name": "excalicon",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Chrome side panel for searching and inserting Google Material Symbols into Excalidraw.",
   "type": "module",
   "private": true,

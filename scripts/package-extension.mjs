@@ -179,7 +179,7 @@ async function materialIconEntries() {
 
 await rm(output, { force: true });
 await mkdir(releaseDir, { recursive: true });
-await execFileAsync("node", [path.join(root, "scripts", "build-extension.mjs")]);
+await execFileAsync(process.execPath, [path.join(root, "scripts", "build-extension.mjs")]);
 
 if (!(await stat(materialPackage).catch(() => null))) {
   await execFileAsync("npm", ["pack", "@material-symbols/svg-400@0.44.10", "--silent"]);
