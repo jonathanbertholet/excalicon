@@ -4,6 +4,7 @@ const MAX_RESULTS = 120;
 const MAX_RECENTS = 12;
 const RECENTS_KEY = "excalicon.recents.v1";
 const DEFAULT_COLOR = "#1f1f1f";
+const AVAILABLE_STYLES = ["rounded", "sharp"];
 const COLOR_PALETTE = [
   "#1f1f1f",
   "#5f6368",
@@ -45,7 +46,6 @@ const COLOR_PALETTE = [
 const DEFAULT_QUERY = "mail arrow check close home search account database cloud folder";
 const STYLE_LABELS = {
   rounded: "Rounded",
-  outlined: "Outlined",
   sharp: "Sharp",
 };
 const ALIASES = {
@@ -341,12 +341,20 @@ let selectedColor = DEFAULT_COLOR;
 
 const normalize = (value) => value.toLowerCase().replace(/[\s-]+/g, "_").trim();
 
-function styleAvailability(icon) {
-  return icon.styles[styleInput.value] ?? icon.styles.rounded;
+function normalizeStyle(style) {
+  return AVAILABLE_STYLES.includes(style) ? style : "rounded";
 }
 
-function preferredFileName(icon, filled = fillInput.checked) {
-  const availability = styleAvailability(icon);
+function selectedStyle() {
+  return normalizeStyle(styleInput.value);
+}
+
+function styleAvailability(icon, style = selectedStyle()) {
+  return icon.styles[normalizeStyle(style)] ?? icon.styles.rounded;
+}
+
+function preferredFileName(icon, style = selectedStyle(), filled = fillInput.checked) {
+  const availability = styleAvailability(icon, style);
   if (filled && availability.filled) {
     return `${icon.name}-fill.svg`;
   }
@@ -354,8 +362,9 @@ function preferredFileName(icon, filled = fillInput.checked) {
   return availability.regular ? `${icon.name}.svg` : `${icon.name}-fill.svg`;
 }
 
-function iconPath(icon, style = styleInput.value, filled = fillInput.checked) {
-  return `icons/${style}/${preferredFileName(icon, filled)}`;
+function iconPath(icon, style = selectedStyle(), filled = fillInput.checked) {
+  const normalizedStyle = normalizeStyle(style);
+  return `icons/${normalizedStyle}/${preferredFileName(icon, normalizedStyle, filled)}`;
 }
 
 function setSvgElementFill(svg, color) {
@@ -397,7 +406,7 @@ function colorizeSvg(svg, color = selectedColor) {
 }
 
 async function loadSvg(icon, options = {}) {
-  const style = options.style ?? styleInput.value;
+  const style = normalizeStyle(options.style ?? selectedStyle());
   const filled = options.filled ?? fillInput.checked;
   const color = options.color ?? selectedColor;
   const path = iconPath(icon, style, filled);
@@ -501,8 +510,8 @@ async function hydrateTile(button, icon, options = {}) {
   }
 }
 
-function primeDragData(event, icon, options = {}, dragOptions = {}) {
-  const style = options.style ?? styleInput.value;
+function primeDragData(event, icon, options = {}) {
+  const style = normalizeStyle(options.style ?? selectedStyle());
   const filled = options.filled ?? fillInput.checked;
   const color = options.color ?? selectedColor;
   const path = iconPath(icon, style, filled);
@@ -530,9 +539,6 @@ function primeDragData(event, icon, options = {}, dragOptions = {}) {
     }
   }
 
-  if (dragOptions.remember !== false) {
-    rememberRecent(icon, { style, filled, color });
-  }
 }
 
 function loadRecents() {
@@ -566,7 +572,7 @@ function rememberRecent(icon, options) {
 
 function createTile(icon, options = {}, tileContext = {}) {
   const button = document.createElement("button");
-  const style = options.style ?? styleInput.value;
+  const style = normalizeStyle(options.style ?? selectedStyle());
   const filled = options.filled ?? fillInput.checked;
   const color = options.color ?? selectedColor;
   button.className = "icon-tile";
@@ -582,7 +588,12 @@ function createTile(icon, options = {}, tileContext = {}) {
   button.addEventListener("pointerenter", () => hydrateTile(button, icon, tileOptions), { once: true });
   button.addEventListener("pointerdown", () => hydrateTile(button, icon, tileOptions), { once: true });
   button.addEventListener("focus", () => hydrateTile(button, icon, tileOptions), { once: true });
-  button.addEventListener("dragstart", (event) => primeDragData(event, icon, tileOptions, tileContext));
+  button.addEventListener("dragstart", (event) => primeDragData(event, icon, tileOptions));
+  button.addEventListener("dragend", () => {
+    if (tileContext.remember !== false) {
+      rememberRecent(icon, tileOptions);
+    }
+  });
 
   hydrateTile(button, icon, tileOptions);
   return button;

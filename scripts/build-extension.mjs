@@ -9,7 +9,7 @@ const packageDir = path.join(root, "node_modules", "@material-symbols", "svg-400
 const distDir = path.join(root, "dist");
 const iconDistRoot = path.join(distDir, "icons");
 const assetDistDir = path.join(distDir, "assets");
-const iconStyles = ["rounded", "outlined", "sharp"];
+const iconStyles = ["rounded", "sharp"];
 
 if (!iconStyles.every((style) => existsSync(path.join(packageDir, style)))) {
   throw new Error("Missing @material-symbols/svg-400. Run `npm install` first.");
@@ -84,4 +84,4 @@ await writeFile(
   ].join("\n"),
 );
 
-console.log(`Built ${icons.length} searchable rounded Material Symbols into ${distDir}`);
+console.log(`Built ${icons.length} searchable Material Symbols into ${distDir}`);

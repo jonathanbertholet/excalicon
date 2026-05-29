@@ -162,7 +162,6 @@ async function materialIconEntries() {
 
     if (
       (rawName.startsWith("package/rounded/") ||
-        rawName.startsWith("package/outlined/") ||
         rawName.startsWith("package/sharp/")) &&
       rawName.endsWith(".svg")
     ) {
