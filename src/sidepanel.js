@@ -349,6 +349,10 @@ function selectedStyle() {
   return normalizeStyle(styleInput.value);
 }
 
+function normalizeHexColor(color) {
+  return /^#[0-9a-f]{6}$/i.test(color) ? color.toLowerCase() : DEFAULT_COLOR;
+}
+
 function styleAvailability(icon, style = selectedStyle()) {
   return icon.styles[normalizeStyle(style)] ?? icon.styles.rounded;
 }
@@ -542,7 +546,7 @@ function primeDragData(event, icon, options = {}) {
 
 function loadRecents() {
   try {
-    return JSON.parse(localStorage.getItem(RECENTS_KEY)) ?? [];
+    return dedupeRecents(JSON.parse(localStorage.getItem(RECENTS_KEY)) ?? []);
   } catch {
     return [];
   }
@@ -556,15 +560,61 @@ function iconByName(name) {
   return ICONS.find((icon) => icon.name === name);
 }
 
+function normalizeRecent(recent) {
+  const name = typeof recent?.name === "string" ? recent.name : "";
+  const icon = iconByName(name);
+
+  if (!icon) {
+    return null;
+  }
+
+  return {
+    name,
+    style: normalizeStyle(recent.style),
+    filled: Boolean(recent.filled),
+    color: normalizeHexColor(recent.color),
+  };
+}
+
+function recentKey(recent) {
+  return [recent.name, recent.style, recent.filled ? "fill" : "regular", recent.color].join(":");
+}
+
+function dedupeRecents(items) {
+  const seen = new Set();
+  const nextRecents = [];
+
+  for (const item of items) {
+    const recent = normalizeRecent(item);
+    if (!recent) {
+      continue;
+    }
+
+    const key = recentKey(recent);
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    nextRecents.push(recent);
+  }
+
+  return nextRecents.slice(0, MAX_RECENTS);
+}
+
 function rememberRecent(icon, options) {
-  const recent = {
+  const recent = normalizeRecent({
     name: icon.name,
     style: options.style,
-    filled: Boolean(options.filled),
+    filled: options.filled,
     color: options.color,
-  };
-  const key = JSON.stringify(recent);
-  recents = [recent, ...recents.filter((item) => JSON.stringify(item) !== key)].slice(0, MAX_RECENTS);
+  });
+
+  if (!recent) {
+    return;
+  }
+
+  recents = dedupeRecents([recent, ...recents]);
   saveRecents();
   renderRecents();
 }
@@ -603,6 +653,8 @@ function createTile(icon, options = {}, tileContext = {}) {
 }
 
 function renderRecents() {
+  recents = dedupeRecents(recents);
+  saveRecents();
   recentsGrid.replaceChildren();
   const validRecents = recents.map((recent) => ({ recent, icon: iconByName(recent.name) })).filter((entry) => entry.icon);
   recentsSection.hidden = validRecents.length === 0;
