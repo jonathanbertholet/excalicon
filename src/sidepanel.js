@@ -521,7 +521,6 @@ function primeDragData(event, icon, options = {}) {
   event.dataTransfer.effectAllowed = "copy";
   event.dataTransfer.setData("text/uri-list", url);
   event.dataTransfer.setData("DownloadURL", `image/svg+xml:${icon.name}.svg:${url}`);
-  event.dataTransfer.setData("application/x-excalicon-color", color);
 
   if (!cachedSvg) {
     return;
@@ -570,6 +569,10 @@ function rememberRecent(icon, options) {
   renderRecents();
 }
 
+function rememberRecentAfterDrop(icon, options) {
+  window.setTimeout(() => rememberRecent(icon, options), 750);
+}
+
 function createTile(icon, options = {}, tileContext = {}) {
   const button = document.createElement("button");
   const style = normalizeStyle(options.style ?? selectedStyle());
@@ -591,7 +594,7 @@ function createTile(icon, options = {}, tileContext = {}) {
   button.addEventListener("dragstart", (event) => primeDragData(event, icon, tileOptions));
   button.addEventListener("dragend", () => {
     if (tileContext.remember !== false) {
-      rememberRecent(icon, tileOptions);
+      rememberRecentAfterDrop(icon, tileOptions);
     }
   });
 

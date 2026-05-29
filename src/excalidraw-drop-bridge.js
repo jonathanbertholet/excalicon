@@ -54,11 +54,6 @@ async function svgFromDrop(dataTransfer) {
 }
 
 function colorFromDrop(dataTransfer) {
-  const explicitColor = dataTransfer.getData("application/x-excalicon-color");
-  if (explicitColor) {
-    return normalizeColor(explicitColor);
-  }
-
   const rawUrl = dataTransfer.getData("text/uri-list");
   if (!rawUrl.startsWith(ICON_RESOURCE_PREFIX)) {
     return DEFAULT_COLOR;
